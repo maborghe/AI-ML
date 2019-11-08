@@ -95,13 +95,13 @@ for c, ker in enumerate(["linear", "rbf"]):
         #        % (C[i]))
         
         i += 1
-        
-    plt.show()
-    plt.savefig('SvmPredPlot')
+            
+    plt.savefig('SvmPredPlot', dpi=250)
     
     # plot Kscores
     plt.figure()
-    plt.xscale("log")
+    plt.xlim(0.0001, 10000)
+    plt.xscale("log")        
     plt.scatter(C, SVMscore)
     plt.show()
     plt.savefig('SvmScorePlot')
