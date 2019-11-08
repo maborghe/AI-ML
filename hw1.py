@@ -74,11 +74,11 @@ if SVM:
         C = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
         SVMscore = [None]*len(C)
         SVMpred = [None]*len(C)
-        i = 0
+        
         plt.figure()
         plt.subplots_adjust(hspace=0.4, wspace=1.5)
-        while i < len(C):
-            clf = SVC(C=C[i], gamma='scale', kernel=ker).fit(xTrain, yTrain)
+        for i, cc in enumerate(C):
+            clf = SVC(C=cc, gamma='scale', kernel=ker).fit(xTrain, yTrain)
             SVMpred[i] = clf.predict(xVal)
             SVMscore[i] = clf.score(xVal, yVal)
             plt.subplot(3, 3, i+1)    
@@ -90,9 +90,7 @@ if SVM:
             plt.scatter(x[:, 0], x[:, 1], c=y, cmap=cmap_bold,
                         edgecolor='k', s=20)        
             #plt.title("(C = %g)"
-            #        % (C[i]))
-            
-            i += 1
+            #        % (C[i]))            
                 
         plt.savefig('SvmPredPlot', dpi=250)
         
@@ -103,5 +101,11 @@ if SVM:
         plt.scatter(C, SVMscore)
         plt.show()
         plt.savefig('SvmScorePlot')
+        
+        # evaluate the best C on the test set
+        bestC = np.asarray(SVMscore).argmax()
+        clf = SVC(C=C[bestC], gamma='scale', kernel=ker).fit(xTrain, yTrain)
+        testScore = clf.score(xTest, yTest)
+        print(ker + " test score: %f" % (KNNtestScore))
 
 
