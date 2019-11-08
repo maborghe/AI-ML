@@ -19,38 +19,35 @@ xTrain, xVal, yTrain, yVal = train_test_split(xNotTest, yNotTest, test_size=0.28
 x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
 y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
 xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
-                         np.arange(y_min, y_max, .005))
+                         np.arange(y_min, y_max, .02))
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
-"""
 # 1. KNN
 K = [1,3,5,7]
 Kscore = [None]*len(K)
-Kpred = [None]*len(K)
-i = 0
+#Kpred = [None]*len(K)
 plt.figure()
-while i < len(K):
-    clf = KNeighborsClassifier(n_neighbors=K[i]).fit(xTrain, yTrain)
-    Kpred[i] = clf.predict(xVal)    
+for i, k in enumerate(K):    
+    clf = KNeighborsClassifier(n_neighbors=k).fit(xTrain, yTrain)
+    #Kpred[i] = clf.predict(xVal)    
     #accuracy = accuracy_score(Kpred[i], yVal)
     Kscore[i] = clf.score(xVal, yVal)
     
     # Create plot        
-    #Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
-    #Z = Z.reshape(xx.shape)        
-    plt.subplot(2, 2, i + 1)
-    
-    #plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)        
+
+    plt.subplot(2, 2, i + 1)    
+    plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
     plt.scatter(x[:, 0], x[:, 1], c=y, cmap=cmap_bold,
                 edgecolor='k', s=20)
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
-    plt.title("Wine classification (k = %i)"
-              % (K[i]))    
+    #plt.title("Wine classification (k = %i)"
+    #          % (K[i]))    
     #filename = 'wine%d' % (K[i])
-    #plt.savefig(filename)        
-    i += 1
+    #plt.savefig(filename)            
 
 plt.show()
 #plt.savefig('KnnPredPlot')
@@ -60,7 +57,12 @@ plt.figure()
 plt.scatter(K, Kscore)
 plt.show()
 #plt.savefig('KnnscorePlot')
-"""
+
+# evaluate the best K on the test set
+bestK = np.asarray(Kscore).argmax()
+clf = KNeighborsClassifier(n_neighbors=K[bestK]).fit(xTrain, yTrain)
+KNNtestScore = clf.score(xTest, yTest)
+print("KNN test score: %f" % (KNNtestScore))
 
 """
 # print out predictions
@@ -69,6 +71,8 @@ for line in Kpred:
 print('------')
 print(*yVal)
 print(*Kscore)
+
+"""
 
 """
 for c, ker in enumerate(["linear", "rbf"]):
@@ -106,7 +110,7 @@ for c, ker in enumerate(["linear", "rbf"]):
     plt.show()
     plt.savefig('SvmScorePlot')
 
-"""
+
 # print out predictions
 for line in SVMpred:
     print(*line)
