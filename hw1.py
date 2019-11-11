@@ -2,10 +2,11 @@
 
 from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
-#from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -32,7 +33,7 @@ xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
-KNN = 1
+KNN = 0
 SVM = 1                            
                             
 # 1. KNN
@@ -77,17 +78,15 @@ if KNN:
 
 # 2. and 3. linear and rbf SVM
 if SVM:
+    C = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
     for c, ker in enumerate(["linear", "rbf"]):
-        # 2. SVM
-        C = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
-        SVMscore = [None]*len(C)
-        SVMpred = [None]*len(C)
+        # 2. SVM        
+        SVMscore = [None]*len(C)        
         
         plt.figure()
         plt.subplots_adjust(hspace=0.4, wspace=1.5)
         for i, cc in enumerate(C):
             clf = SVC(C=cc, gamma='scale', kernel=ker).fit(xTrain, yTrain)
-            SVMpred[i] = clf.predict(xVal)
             SVMscore[i] = clf.score(xVal, yVal)
             plt.subplot(3, 3, i+1)    
             plt.xlim(xx.min(), xx.max())
@@ -116,8 +115,20 @@ if SVM:
         clf = SVC(C=C[bestC], gamma='scale', kernel=ker).fit(xTrain, yTrain)
         SVMtestScore = clf.score(xTest, yTest)
         print(ker + " test score: %f" % (SVMtestScore))
+        print()
+        
+    #4. Grid search    
+    parameters = {'gamma':('auto', 'scale'), 'C':C}
+    clf = GridSearchCV(SVC(kernel="rbf"), parameters, cv=5, iid='false').fit(xTrain, yTrain)
+    gridTestScore = clf.score(xTest, yTest)
+    bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())
+    print("best params: " + bestParams)
+    print("grid test score: %f" % (gridTestScore))
 
-# 4. K-Fold     
+
+
+
+# 5. K-Fold     
 # Merge train and validation sets         
 xTrain = xNotTest
 yTrain = yNotTest
