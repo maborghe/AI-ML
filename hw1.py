@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 #from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,15 +16,23 @@ x = X[:,:2]
 xNotTest, xTest, yNotTest, yTest = train_test_split(x, y, test_size=0.3)
 xTrain, xVal, yTrain, yVal = train_test_split(xNotTest, yNotTest, test_size=0.28)
 
+scaler = StandardScaler()
+scaler.fit(xTrain)
+xTrain = scaler.transform(xTrain)
+xVal = scaler.transform(xVal)
+xTest = scaler.transform(xTest)
+xNotTest = scaler.transform(xNotTest)
+
+
 # Setup plot
-x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
-y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
+x_min, x_max = xTest[:, 0].min() - 1, xTest[:, 0].max() + 1
+y_min, y_max = xTest[:, 1].min() - 1, xTest[:, 1].max() + 1
 xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
                          np.arange(y_min, y_max, .02))
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
-KNN = 0
+KNN = 1
 SVM = 1                            
                             
 # 1. KNN
@@ -42,7 +51,7 @@ if KNN:
     
         plt.subplot(2, 2, i + 1)    
         plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
-        plt.scatter(x[:, 0], x[:, 1], c=y, cmap=cmap_bold,
+        plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
                     edgecolor='k', s=20)
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
@@ -66,7 +75,6 @@ if KNN:
     KNNtestScore = clf.score(xTest, yTest)
     print("KNN test score: %f" % (KNNtestScore))
 
-
 # 2. and 3. linear and rbf SVM
 if SVM:
     for c, ker in enumerate(["linear", "rbf"]):
@@ -87,7 +95,7 @@ if SVM:
             Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
             Z = Z.reshape(xx.shape)
             plt.contourf(xx, yy, Z, cmap=cmap_light)
-            plt.scatter(x[:, 0], x[:, 1], c=y, cmap=cmap_bold,
+            plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
                         edgecolor='k', s=20)        
             #plt.title("(C = %g)"
             #        % (C[i]))            
@@ -104,8 +112,12 @@ if SVM:
         
         # evaluate the best C on the test set
         bestC = np.asarray(SVMscore).argmax()
+        #print("bestC: %d - %f" % (bestC, SVMscore[bestC]))
         clf = SVC(C=C[bestC], gamma='scale', kernel=ker).fit(xTrain, yTrain)
-        testScore = clf.score(xTest, yTest)
-        print(ker + " test score: %f" % (KNNtestScore))
+        SVMtestScore = clf.score(xTest, yTest)
+        print(ker + " test score: %f" % (SVMtestScore))
 
-
+# 4. K-Fold     
+# Merge train and validation sets         
+xTrain = xNotTest
+yTrain = yNotTest
