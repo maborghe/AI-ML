@@ -33,7 +33,7 @@ xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
-KNN = 0
+KNN = 1
 SVM = 1                            
                             
 # 1. KNN
@@ -62,13 +62,13 @@ if KNN:
         #plt.savefig(filename)            
     
     plt.show()
-    #plt.savefig('KnnPredPlot')
+    plt.savefig('knnPredPlot')
     
     # plot Kscores
     plt.figure()
     plt.scatter(K, Kscore)
     plt.show()
-    #plt.savefig('KnnscorePlot')
+    plt.savefig('knnScorePlot')
     
     # evaluate the best K on the test set
     bestK = np.asarray(Kscore).argmax()
@@ -97,8 +97,8 @@ if SVM:
                         edgecolor='k', s=20)        
             #plt.title("(C = %g)"
             #        % (C[i]))            
-                
-        plt.savefig('SvmPredPlot', dpi=250)
+                        
+        plt.savefig(ker+'PredPlot', dpi=250)
         
         # plot Kscores
         plt.figure()
@@ -106,7 +106,7 @@ if SVM:
         plt.xscale("log")        
         plt.scatter(C, SVMscore)
         plt.show()
-        plt.savefig('SvmScorePlot')
+        plt.savefig(ker+'ScorePlot')
         
         # evaluate the best C on the test set
         bestC = np.asarray(SVMscore).argmax()
@@ -136,6 +136,7 @@ plt.contourf(xx, yy, Z, cmap=cmap_light)
 plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
             edgecolor='k', s=20)    
 plt.show()
+plt.savefig('gridPredPlot')
 gridTestScore = clf.score(xTest, yTest)
 print("best params: C=%f, gamma=%s" %(bestC, bestGamma))
 print("grid test score: %f" % (gridTestScore))
@@ -157,6 +158,7 @@ plt.contourf(xx, yy, Z, cmap=cmap_light)
 plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
             edgecolor='k', s=20)    
 plt.show()
+plt.savefig('cvGridPredPlot')
 gridTestScore = clf.score(xTest, yTest)
 bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())    
 print("CV best params: " + bestParams)
