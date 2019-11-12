@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+from sklearn.model_selection import PredefinedSplit
 from sklearn.model_selection import GridSearchCV
-
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -77,12 +77,11 @@ if KNN:
     print("KNN test score: %f" % (KNNtestScore))
 
 # 2. and 3. linear and rbf SVM
-if SVM:
-    C = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
-    for c, ker in enumerate(["linear", "rbf"]):
-        # 2. SVM        
-        SVMscore = [None]*len(C)        
-        
+C = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+SVMscore = [None]*len(C)        
+if SVM:    
+    for c, ker in enumerate(["linear", "rbf"]):               
+                
         plt.figure()
         plt.subplots_adjust(hspace=0.4, wspace=1.5)
         for i, cc in enumerate(C):
@@ -116,19 +115,49 @@ if SVM:
         SVMtestScore = clf.score(xTest, yTest)
         print(ker + " test score: %f" % (SVMtestScore))
         print()
+                           
         
-    #4. Grid search    
-    parameters = {'gamma':('auto', 'scale'), 'C':C}
-    clf = GridSearchCV(SVC(kernel="rbf"), parameters, cv=5, iid='false').fit(xTrain, yTrain)
-    gridTestScore = clf.score(xTest, yTest)
-    bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())
-    print("best params: " + bestParams)
-    print("grid test score: %f" % (gridTestScore))
+#4. Grid search
+GridScore = [SVMscore, [None]*len(C)]
+for i, cc in enumerate(C):
+    clf = SVC(C=cc, gamma='auto', kernel='rbf').fit(xTrain, yTrain)
+    GridScore[1][i] = clf.score(xVal, yVal)
+
+bestVal = np.asmatrix(GridScore).argmax()
+bestC = C[bestVal % len(C)]
+bestGamma = 'scale' if bestVal//len(C) == 0 else 'auto'
+clf = SVC(C=bestC, gamma=bestGamma, kernel='rbf').fit(xTrain, yTrain)
+plt.figure()
+plt.xlim(xx.min(), xx.max())
+plt.ylim(yy.min(), yy.max())
+Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape)
+plt.contourf(xx, yy, Z, cmap=cmap_light)
+plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
+            edgecolor='k', s=20)    
+plt.show()
+gridTestScore = clf.score(xTest, yTest)
+print("best params: C=%f, gamma=%s" %(bestC, bestGamma))
+print("grid test score: %f" % (gridTestScore))
+print()    
 
 
-
-
-# 5. K-Fold     
+# 5. Grid search with 5-Fold CV
 # Merge train and validation sets         
 xTrain = xNotTest
 yTrain = yNotTest
+parameters = {'gamma':('auto', 'scale'), 'C':C}
+clf = GridSearchCV(SVC(kernel="rbf"), parameters, cv=5, iid='false').fit(xTrain, yTrain)
+plt.figure()
+plt.xlim(xx.min(), xx.max())
+plt.ylim(yy.min(), yy.max())
+Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape)
+plt.contourf(xx, yy, Z, cmap=cmap_light)
+plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
+            edgecolor='k', s=20)    
+plt.show()
+gridTestScore = clf.score(xTest, yTest)
+bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())    
+print("CV best params: " + bestParams)
+print("CV grid test score: %f" % (gridTestScore))
