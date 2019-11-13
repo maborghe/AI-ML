@@ -24,7 +24,6 @@ xVal = scaler.transform(xVal)
 xTest = scaler.transform(xTest)
 xNotTest = scaler.transform(xNotTest)
 
-
 # Setup plot
 x_min, x_max = xTest[:, 0].min() - 1, xTest[:, 0].max() + 1
 y_min, y_max = xTest[:, 1].min() - 1, xTest[:, 1].max() + 1
@@ -58,17 +57,16 @@ if KNN:
         plt.ylim(yy.min(), yy.max())
         #plt.title("Wine classification (k = %i)"
         #          % (K[i]))    
-        #filename = 'wine%d' % (K[i])
-        #plt.savefig(filename)            
+        #filename = 'wine%d' % (K[i])        
     
-    plt.show()
-    plt.savefig('knnPredPlot')
+    #plt.show()
+    plt.savefig('knnPredPlot', dpi=250)
     
     # plot Kscores
     plt.figure()
     plt.scatter(K, Kscore)
-    plt.show()
-    plt.savefig('knnScorePlot')
+    #plt.show()
+    plt.savefig('knnScorePlot', dpi=250)
     
     # evaluate the best K on the test set
     bestK = np.asarray(Kscore).argmax()
@@ -106,7 +104,7 @@ if SVM:
         plt.xscale("log")        
         plt.scatter(C, SVMscore)
         plt.show()
-        plt.savefig(ker+'ScorePlot')
+        plt.savefig(ker+'ScorePlot', dpi=250)
         
         # evaluate the best C on the test set
         bestC = np.asarray(SVMscore).argmax()
@@ -136,7 +134,7 @@ plt.contourf(xx, yy, Z, cmap=cmap_light)
 plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
             edgecolor='k', s=20)    
 plt.show()
-plt.savefig('gridPredPlot')
+plt.savefig('gridPredPlot', dpi=250)
 gridTestScore = clf.score(xTest, yTest)
 print("best params: C=%f, gamma=%s" %(bestC, bestGamma))
 print("grid test score: %f" % (gridTestScore))
@@ -158,7 +156,7 @@ plt.contourf(xx, yy, Z, cmap=cmap_light)
 plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
             edgecolor='k', s=20)    
 plt.show()
-plt.savefig('cvGridPredPlot')
+plt.savefig('cvGridPredPlot', dpi=250)
 gridTestScore = clf.score(xTest, yTest)
 bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())    
 print("CV best params: " + bestParams)

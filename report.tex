@@ -1,8 +1,49 @@
-\documentclass[11pt,twoside,a4paper]{report}
+\documentclass[11pt,twoside,a4paper]{article}
+
+\usepackage{hyperref}
+\usepackage{graphicx}
 
 \begin{document}
-\title{Homework 1}
+\title{AIML Homework 1}
 \author{Matteo Borghesi}
-\date{November 2019}
 \maketitle
+
+\section{Dataset presentation}
+In this report we are going to perform a shallow learning analysis on the wine dataset . 
+%&\footnote{\url{https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_wine.html#examples-using-sklearn-datasets-load-wine}}
+This dataset contains results of a chemical analysis of wines grown in the same region in Italy by three different cultivators. Although it features thirteen different measurements regarding different constituents, we will consider only two of them, which are the Alcohol and the Malic Acid. Our goal is to be able to predict which cultivator produced a certain wine just by looking at these two attributes.
+
+In order to do that, we will randomly split the data in a training set, a validation set and a test set, with proportion 5:2:3. Since the dataset contains 178 samples overall, there will be 89 samples in the training set, 35 in the validation and 54 in the test set.
+In section~\ref{CV} we will then merge the training and the validation set and proceed with cross validation on the resulting set.
+
+In order to prevent one attribute from overpowering the other one in the analysis, the samples are normalized according to the mean and the variance computed on the training set only.
+
+\section{K-nearest Neighbors}
+As a first step, we apply the K-nearest Neighbors (a.k.a. KNN) algorithm to the Wine dataset. The idea behind said algorithm is to assign the class labels to the test items basing on their 'proximity' to the training samples. In particular, the label that occurs most often in the \emph{k} 'nearest' samples is chosen as prediction. The proximity between two samples can be measured according to different metrics: in our analysis - as it is mostly the case - we use the Euclidean distance, i.e. the norm of the difference between the two sample vectors.
+
+We apply our analysis four times for different values of the parameter \emph{k} (respectively 1, 3, 5 and 7). The result of the training phase is shown in fig.~\ref{fig:knnPred}, with the dots representing the training items. The background colors on the other hand signal which class is assigned to test samples whose attributes fall within that area. As it can be seen on the plots, as \emph{k} increases the boundary lines become more uniform, since they depend less on single or few samples lying in a area where the majority of the items belong to a different class. Although this reduces the risk of overfitting the data provided, it may also reduce the model's capability of recognizing particular details in the data. %% Example: (1, 3.5)
+This balance, known as bias-variance tradeoff, is inherent to most statistical learning methods. Indeed, if we measure the accuracy of the model to varying of \emph{k} we notice that it's not necessarily the highest \emph{k} that makes the best prediction (see fig.~\ref{fig:knnScore}).
+
+\begin{figure}[]
+  \begin{center}
+  \includegraphics[]{knnPredPlot.png}
+  \caption{Knn analysis}
+  \label{fig:knnPred}
+  \end{center}
+\end{figure}
+
+\begin{figure}[]
+  \begin{center}
+  \includegraphics[]{knnScorePlot.png}
+  \caption{Knn accuracy}
+  \label{fig:knnScore}
+  \end{center}
+\end{figure}
+
+\section{CV}
+\label{CV}
+lorem ipsum
+
+
 \end{document}
+
