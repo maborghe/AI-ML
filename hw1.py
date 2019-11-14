@@ -12,11 +12,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
+
+def clear_labels(ax, x, y):
+  for i, c in enumerate(x):
+    ax[c].set_xticklabels([])
+    ax[c].set_xlabel('')    
+  for i, c, in enumerate(y):
+    ax[c].set_yticklabels([])
+    ax[c].set_ylabel('')
+      
+
 X, y = load_wine(True)
 x = X[:,:2]
 xNotTest, xTest, yNotTest, yTest = train_test_split(x, y, test_size=0.3)
 xTrain, xVal, yTrain, yVal = train_test_split(xNotTest, yNotTest, test_size=0.28)
 
+# Normalize data
 scaler = StandardScaler()
 scaler.fit(xTrain)
 xTrain = scaler.transform(xTrain)
@@ -62,14 +73,7 @@ if KNN:
         #          % (K[i]))    
         #filename = 'wine%d' % (K[i])        
     
-    ax[0].set_xticklabels([])
-    ax[0].set_xlabel('')
-    ax[1].set_xticklabels([])
-    ax[1].set_xlabel('')
-    ax[1].set_yticklabels([])
-    ax[1].set_ylabel('')
-    ax[3].set_yticklabels([])
-    ax[3].set_ylabel('')
+    clear_labels(ax, [0, 1], [1, 3])
     
     #plt.show()
     plt.savefig('knnPredPlot', dpi=250)
