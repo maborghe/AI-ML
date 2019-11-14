@@ -33,13 +33,14 @@ cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
 KNN = 1
-SVM = 1                            
+SVM = 0                    
                             
 # 1. KNN
 if KNN:
     K = [1,3,5,7]
     Kscore = [None]*len(K)
     plt.figure()
+    ax = [None]*len(K)
     for i, k in enumerate(K):    
         clf = KNeighborsClassifier(n_neighbors=k).fit(xTrain, yTrain)  
         #accuracy = accuracy_score(Kpred[i], yVal)
@@ -48,8 +49,10 @@ if KNN:
         # Create plot        
         Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
         Z = Z.reshape(xx.shape)        
-    
-        plt.subplot(2, 2, i + 1)    
+            
+        ax[i] = plt.subplot(2, 2, i + 1)    
+        plt.xlabel('Alcohol')
+        plt.ylabel('Malic acid')
         plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
         plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
                     edgecolor='k', s=20)
@@ -58,6 +61,15 @@ if KNN:
         #plt.title("Wine classification (k = %i)"
         #          % (K[i]))    
         #filename = 'wine%d' % (K[i])        
+    
+    ax[0].set_xticklabels([])
+    ax[0].set_xlabel('')
+    ax[1].set_xticklabels([])
+    ax[1].set_xlabel('')
+    ax[1].set_yticklabels([])
+    ax[1].set_ylabel('')
+    ax[3].set_yticklabels([])
+    ax[3].set_ylabel('')
     
     #plt.show()
     plt.savefig('knnPredPlot', dpi=250)
@@ -118,50 +130,50 @@ if SVM:
         print(ker + " test score: %f" % (SVMtestScore))
         print()
                            
-        
-#4. Grid search
-GridScore = [SVMscore, [None]*len(C)]
-for i, cc in enumerate(C):
-    clf = SVC(C=cc, gamma='auto', kernel='rbf').fit(xTrain, yTrain)
-    GridScore[1][i] = clf.score(xVal, yVal)
+            
+    #4. Grid search
+    GridScore = [SVMscore, [None]*len(C)]
+    for i, cc in enumerate(C):
+        clf = SVC(C=cc, gamma='auto', kernel='rbf').fit(xTrain, yTrain)
+        GridScore[1][i] = clf.score(xVal, yVal)
+    
+    bestVal = np.asmatrix(GridScore).argmax()
+    bestC = C[bestVal % len(C)]
+    bestGamma = 'scale' if bestVal//len(C) == 0 else 'auto'
+    clf = SVC(C=bestC, gamma=bestGamma, kernel='rbf').fit(xTrain, yTrain)
+    plt.figure()
+    plt.xlim(xx.min(), xx.max())
+    plt.ylim(yy.min(), yy.max())
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    plt.contourf(xx, yy, Z, cmap=cmap_light)
+    plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
+                edgecolor='k', s=20)    
+    plt.show()
+    plt.savefig('gridPredPlot', dpi=250)
+    gridTestScore = clf.score(xTest, yTest)
+    print("best params: C=%f, gamma=%s" %(bestC, bestGamma))
+    print("grid test score: %f" % (gridTestScore))
+    print()    
 
-bestVal = np.asmatrix(GridScore).argmax()
-bestC = C[bestVal % len(C)]
-bestGamma = 'scale' if bestVal//len(C) == 0 else 'auto'
-clf = SVC(C=bestC, gamma=bestGamma, kernel='rbf').fit(xTrain, yTrain)
-plt.figure()
-plt.xlim(xx.min(), xx.max())
-plt.ylim(yy.min(), yy.max())
-Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
-Z = Z.reshape(xx.shape)
-plt.contourf(xx, yy, Z, cmap=cmap_light)
-plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
-            edgecolor='k', s=20)    
-plt.show()
-plt.savefig('gridPredPlot', dpi=250)
-gridTestScore = clf.score(xTest, yTest)
-print("best params: C=%f, gamma=%s" %(bestC, bestGamma))
-print("grid test score: %f" % (gridTestScore))
-print()    
 
-
-# 5. Grid search with 5-Fold CV
-# Merge train and validation sets         
-xTrain = xNotTest
-yTrain = yNotTest
-parameters = {'gamma':('auto', 'scale'), 'C':C}
-clf = GridSearchCV(SVC(kernel="rbf"), parameters, cv=5, iid='false').fit(xTrain, yTrain)
-plt.figure()
-plt.xlim(xx.min(), xx.max())
-plt.ylim(yy.min(), yy.max())
-Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
-Z = Z.reshape(xx.shape)
-plt.contourf(xx, yy, Z, cmap=cmap_light)
-plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
-            edgecolor='k', s=20)    
-plt.show()
-plt.savefig('cvGridPredPlot', dpi=250)
-gridTestScore = clf.score(xTest, yTest)
-bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())    
-print("CV best params: " + bestParams)
-print("CV grid test score: %f" % (gridTestScore))
+    # 5. Grid search with 5-Fold CV
+    # Merge train and validation sets         
+    xTrain = xNotTest
+    yTrain = yNotTest
+    parameters = {'gamma':('auto', 'scale'), 'C':C}
+    clf = GridSearchCV(SVC(kernel="rbf"), parameters, cv=5, iid='false').fit(xTrain, yTrain)
+    plt.figure()
+    plt.xlim(xx.min(), xx.max())
+    plt.ylim(yy.min(), yy.max())
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    plt.contourf(xx, yy, Z, cmap=cmap_light)
+    plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
+                edgecolor='k', s=20)    
+    plt.show()
+    plt.savefig('cvGridPredPlot', dpi=250)
+    gridTestScore = clf.score(xTest, yTest)
+    bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())    
+    print("CV best params: " + bestParams)
+    print("CV grid test score: %f" % (gridTestScore))
