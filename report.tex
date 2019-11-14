@@ -2,6 +2,8 @@
 
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{subcaption}
 
 \begin{document}
 \title{AIML Homework 1}
@@ -34,18 +36,46 @@ As intuition suggests, we choose as optimal the value of \emph{k} that maximizes
 \end{figure}
 
 \begin{figure}[]
+    \centering
+    \begin{subfigure}{0.7\textwidth}
+	\includegraphics[width=\linewidth]{knnScorePlot.png}
+        \caption{}
+        \label{fig:knnScore}
+    \end{subfigure}
+    \begin{subfigure}{0.7\textwidth}
+	\includegraphics[width=\linewidth]{linearScorePlot.png}
+        \caption{}
+        \label{fig:linearScore}
+    \end{subfigure}
+    \begin{subfigure}{0.7\textwidth}
+        \includegraphics[width=\linewidth]{rbfScorePlot.png}
+        \caption{}
+        \label{fig:rbfScore}
+    \end{subfigure}%
+    \caption{Accuracy on the validation set with respect to the parameter in KNN (a), linear SVM (b) and rbf SVM (c)}
+\end{figure}
+
+
+\begin{figure}[]
   \begin{center}
-  \includegraphics[]{knnScorePlot.png}
-  \caption{Knn accuracy}
-  \label{fig:knnScore}
+  \includegraphics[]{linearPredPlot.png}
+  \caption{Knn analysis}
+  \label{fig:linearPred}
   \end{center}
 \end{figure}
+
+
 
 \section{Linear Support Vector Machines}
 In the second stage of our classification analysis, we use a method called Support Vector Machines (SVM), which aims to find linear decision boundaries in the plane of the feature vectors, so that all points belonging to the same class lie on the same side of the boundary. Furthermore, SVM is designed to maximize the minimum distance between the linear separator and the points of all classes.\newline
 If the problem is not linearly separable, it is possible to introduce a parameter \emph{C} in the model, called 'slack variable', which tells how far beyond the decision boundary the points are allowed to be in case they fall into the area of another class.
 
-As we already did for KNN, we build classifiers for multiple values of \emph{C} (here 0.001, 0.01, 0.1, 1, 10, 100, 1000) basing on the training set and evaluate them on the validation set, then we choose the one with the best score and assess its reliability by means of the test set.
+As we already did for KNN, we build classifiers for multiple values of \emph{C} (here 0.001, 0.01, 0.1, 1, 10, 100, 1000) basing on the training set and evaluate them on the validation set, then we choose the one with the best score and assess its reliability by means of the test set.\newline
+The resulting decision boundaries are plotted in fig.~\ref{fig:linearPred}. For the first two values of \emph{C}, the problem is not linearly separable into three classes, because the model admits by construction only a low level of flexibility in accepting wrong labelings. When \emph{C} gets higher, it is possibile to find linear separators that satisfy the condition for all the points. However, beyond a certain threshold the model remains unchanged, since higher values of the slack variable do not bring any extra benefit to the model. The same result is evident in the accuracy.
+
+The same is can be noticed in fig.~\ref{fig:linearScore}, which plots the accuracy on the validation sets for the different values of \emph{C}. As the model becomes able to linearly separe the data, the accuracy has a boost, whereas after that it reaches a knee, beyond that it remains stable. We finally pick the model that performs best on the validation set and estimate its accuracy on the test set, which turns to be YYY.
+
+
 
 \section{CV}
 \label{CV}

@@ -3,3 +3,6 @@ Explain what the different sets are for
 Use unnormalized numbers in the plots
 Plot dimension names
 
+
+"In tutti tranne k-fold normalizza post-split il train. Val e test li normalizzi con media e varianza del train prima di essere normalizzato
+Nel k-fold non puoi normalizzare niente, devi fare in modo di normalizzare ogni singolo fold dato in pasto all'svc, quindi crei una pipe con StandardScaler e SVC e usi GridSearchSV per trovare i best passandogli la pipe e i parametri con il KFold(5)"

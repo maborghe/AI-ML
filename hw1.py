@@ -65,6 +65,8 @@ if KNN:
     # plot Kscores
     plt.figure()
     plt.scatter(K, Kscore)
+    plt.xlabel('K')
+    plt.ylabel('accuracy')
     #plt.show()
     plt.savefig('knnScorePlot', dpi=250)
     
@@ -101,9 +103,11 @@ if SVM:
         # plot Kscores
         plt.figure()
         plt.xlim(0.0001, 10000)
-        plt.xscale("log")        
+        plt.xscale("log")      
+        plt.xlabel('C')
+        plt.ylabel('accuracy')
         plt.scatter(C, SVMscore)
-        plt.show()
+        #plt.show()
         plt.savefig(ker+'ScorePlot', dpi=250)
         
         # evaluate the best C on the test set
