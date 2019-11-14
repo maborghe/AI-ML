@@ -43,8 +43,8 @@ xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
-KNN = 1
-SVM = 0                    
+KNN = 0
+SVM = 1                    
                             
 # 1. KNN
 if KNN:
@@ -74,8 +74,6 @@ if KNN:
         #filename = 'wine%d' % (K[i])        
     
     clear_labels(ax, [0, 1], [1, 3])
-    
-    #plt.show()
     plt.savefig('knnPredPlot', dpi=250)
     
     # plot Kscores
@@ -95,15 +93,17 @@ if KNN:
 # 2. and 3. linear and rbf SVM
 C = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
 SVMscore = [None]*len(C)        
-if SVM:    
+if SVM:        
     for c, ker in enumerate(["linear", "rbf"]):               
-                
+        ax = [None]*len(C)                
         plt.figure()
-        plt.subplots_adjust(hspace=0.4, wspace=1.5)
+        #plt.subplots_adjust(hspace=0.4, wspace=1.5)        
         for i, cc in enumerate(C):
             clf = SVC(C=cc, gamma='scale', kernel=ker).fit(xTrain, yTrain)
             SVMscore[i] = clf.score(xVal, yVal)
-            plt.subplot(3, 3, i+1)    
+            ax[i] = plt.subplot(3, 3, i+1) 
+            plt.xlabel('Alcohol')
+            plt.ylabel('Malic acid')
             plt.xlim(xx.min(), xx.max())
             plt.ylim(yy.min(), yy.max())
             Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
@@ -114,6 +114,7 @@ if SVM:
             #plt.title("(C = %g)"
             #        % (C[i]))            
                         
+        clear_labels(ax, [0, 1, 2, 3], [1, 2, 4, 5])
         plt.savefig(ker+'PredPlot', dpi=250)
         
         # plot Kscores
@@ -153,7 +154,8 @@ if SVM:
     plt.contourf(xx, yy, Z, cmap=cmap_light)
     plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
                 edgecolor='k', s=20)    
-    plt.show()
+    plt.xlabel('Alcohol')
+    plt.ylabel('Malic acid')    
     plt.savefig('gridPredPlot', dpi=250)
     gridTestScore = clf.score(xTest, yTest)
     print("best params: C=%f, gamma=%s" %(bestC, bestGamma))
@@ -175,7 +177,8 @@ if SVM:
     plt.contourf(xx, yy, Z, cmap=cmap_light)
     plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
                 edgecolor='k', s=20)    
-    plt.show()
+    plt.xlabel('Alcohol')
+    plt.ylabel('Malic acid')    
     plt.savefig('cvGridPredPlot', dpi=250)
     gridTestScore = clf.score(xTest, yTest)
     bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())    
