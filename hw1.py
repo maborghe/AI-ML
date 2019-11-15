@@ -11,8 +11,6 @@ from sklearn.model_selection import GridSearchCV
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
-import math
-
 
 def clear_labels(ax, x, y):
   for i, c in enumerate(x):
@@ -20,15 +18,28 @@ def clear_labels(ax, x, y):
     ax[c].set_xlabel('')    
   for i, c, in enumerate(y):
     ax[c].set_yticklabels([])
-    ax[c].set_ylabel('')
-      
-def truncate(f, n):
-    '''Truncates/pads a float f to n decimal places without rounding'''
+    ax[c].set_ylabel('')         
+    
+def truncate(f):
+    '''Truncates/pads a float f to 2 decimal places without rounding'''
     s = '{}'.format(f)
     if 'e' in s or 'E' in s:
-        return '{0:.{1}f}'.format(f, n)
+        return '{0:.{1}f}'.format(f, 2)
     i, p, d = s.partition('.')
-    return '.'.join([i, (d+'0'*n)[:n]])
+    return '.'.join([i, (d+'0'*2)[:2]])
+
+def denormalize_labels(ax, p_mean, p_variance):
+    xloc, xlabels = plt.xticks()
+    dloc = xloc*p_variance[0] + p_mean[0]
+    for ii, f in enumerate(dloc):
+        dloc[ii] = truncate(dloc[ii])        
+    ax.set_xticklabels(dloc)
+    
+    yloc, ylabels = plt.yticks()
+    dloc = yloc*p_variance[1] + p_mean[1]
+    for ii, f in enumerate(dloc):
+        dloc[ii] = truncate(dloc[ii])        
+    ax.set_yticklabels(dloc)    
 
 X, y = load_wine(True)
 x = X[:,:2]
@@ -47,8 +58,8 @@ variance = scaler.var_
 
 
 # Setup plot
-x_min, x_max = xTest[:, 0].min() - 1, xTest[:, 0].max() + 1
-y_min, y_max = xTest[:, 1].min() - 1, xTest[:, 1].max() + 1
+x_min, x_max = xTrain[:, 0].min() - 1, xTrain[:, 0].max() + 1
+y_min, y_max = xTrain[:, 1].min() - 1, xTrain[:, 1].max() + 1
 xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
                          np.arange(y_min, y_max, .02))
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
@@ -80,7 +91,9 @@ if KNN:
                     edgecolor='k', s=20)
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
-        
+
+        denormalize_labels(ax[i], mean, variance)        
+        """
         xloc, xlabels = plt.xticks()
         dloc = xloc*variance[0] + mean[0]        
         for ii, f in enumerate(dloc):
@@ -92,7 +105,7 @@ if KNN:
         for ii, f in enumerate(dloc):
             dloc[ii] = truncate(dloc[ii], 2)        
         ax[i].set_yticklabels(dloc)
-
+        """
         #plt.title("Wine classification (k = %i)"
         #          % (K[i]))    
         #filename = 'wine%d' % (K[i])        
