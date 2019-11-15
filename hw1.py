@@ -11,6 +11,7 @@ from sklearn.model_selection import GridSearchCV
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+import math
 
 
 def clear_labels(ax, x, y):
@@ -21,6 +22,13 @@ def clear_labels(ax, x, y):
     ax[c].set_yticklabels([])
     ax[c].set_ylabel('')
       
+def truncate(f, n):
+    '''Truncates/pads a float f to n decimal places without rounding'''
+    s = '{}'.format(f)
+    if 'e' in s or 'E' in s:
+        return '{0:.{1}f}'.format(f, n)
+    i, p, d = s.partition('.')
+    return '.'.join([i, (d+'0'*n)[:n]])
 
 X, y = load_wine(True)
 x = X[:,:2]
@@ -34,6 +42,9 @@ xTrain = scaler.transform(xTrain)
 xVal = scaler.transform(xVal)
 xTest = scaler.transform(xTest)
 xNotTest = scaler.transform(xNotTest)
+mean = scaler.mean_
+variance = scaler.var_
+
 
 # Setup plot
 x_min, x_max = xTest[:, 0].min() - 1, xTest[:, 0].max() + 1
@@ -43,8 +54,8 @@ xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
-KNN = 0
-SVM = 1                    
+KNN = 1
+SVM = 0               
                             
 # 1. KNN
 if KNN:
@@ -69,9 +80,23 @@ if KNN:
                     edgecolor='k', s=20)
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
+        
+        xloc, xlabels = plt.xticks()
+        dloc = xloc*variance[0] + mean[0]        
+        for ii, f in enumerate(dloc):
+            dloc[ii] = truncate(dloc[ii], 2)        
+        ax[i].set_xticklabels(dloc)
+        
+        yloc, ylabels = plt.yticks()
+        dloc = yloc*variance[1] + mean[1]
+        for ii, f in enumerate(dloc):
+            dloc[ii] = truncate(dloc[ii], 2)        
+        ax[i].set_yticklabels(dloc)
+
         #plt.title("Wine classification (k = %i)"
         #          % (K[i]))    
         #filename = 'wine%d' % (K[i])        
+    
     
     clear_labels(ax, [0, 1], [1, 3])
     plt.savefig('knnPredPlot', dpi=250)
