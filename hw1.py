@@ -65,8 +65,8 @@ xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
-KNN = 1
-SVM = 0               
+KNN = 0
+SVM = 1             
                             
 # 1. KNN
 if KNN:
@@ -92,20 +92,7 @@ if KNN:
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
 
-        denormalize_labels(ax[i], mean, variance)        
-        """
-        xloc, xlabels = plt.xticks()
-        dloc = xloc*variance[0] + mean[0]        
-        for ii, f in enumerate(dloc):
-            dloc[ii] = truncate(dloc[ii], 2)        
-        ax[i].set_xticklabels(dloc)
-        
-        yloc, ylabels = plt.yticks()
-        dloc = yloc*variance[1] + mean[1]
-        for ii, f in enumerate(dloc):
-            dloc[ii] = truncate(dloc[ii], 2)        
-        ax[i].set_yticklabels(dloc)
-        """
+        denormalize_labels(ax[i], mean, variance)
         #plt.title("Wine classification (k = %i)"
         #          % (K[i]))    
         #filename = 'wine%d' % (K[i])        
@@ -148,7 +135,9 @@ if SVM:
             Z = Z.reshape(xx.shape)
             plt.contourf(xx, yy, Z, cmap=cmap_light)
             plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
-                        edgecolor='k', s=20)        
+                        edgecolor='k', s=20)   
+            
+            denormalize_labels(ax[i], mean, variance)
             #plt.title("(C = %g)"
             #        % (C[i]))            
                         
@@ -191,7 +180,9 @@ if SVM:
     Z = Z.reshape(xx.shape)
     plt.contourf(xx, yy, Z, cmap=cmap_light)
     plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
-                edgecolor='k', s=20)    
+                edgecolor='k', s=20)      
+
+    denormalize_labels(plt.axes(), mean, variance)
     plt.xlabel('Alcohol')
     plt.ylabel('Malic acid')    
     plt.savefig('gridPredPlot', dpi=250)
@@ -215,6 +206,7 @@ if SVM:
     plt.contourf(xx, yy, Z, cmap=cmap_light)
     plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
                 edgecolor='k', s=20)    
+    denormalize_labels(plt.axes(), mean, variance)
     plt.xlabel('Alcohol')
     plt.ylabel('Malic acid')    
     plt.savefig('cvGridPredPlot', dpi=250)
