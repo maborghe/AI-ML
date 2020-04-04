@@ -1,12 +1,10 @@
-# exec(open("./hw1.py").read())
-
 from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from sklearn.model_selection import PredefinedSplit
 from sklearn.model_selection import GridSearchCV
+from sklearn.decomposition import PCA
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -45,10 +43,11 @@ X, y = load_wine(True)
 x = X[:,:2]
 xNotTest, xTest, yNotTest, yTest = train_test_split(x, y, test_size=0.3)
 xTrain, xVal, yTrain, yVal = train_test_split(xNotTest, yNotTest, test_size=0.28)
+XTrain, XTest, YTest, YTest = train_test_split(X, y, test_size=0.3)
 
 # Normalize data
 scaler = StandardScaler()
-scaler.fit(xTrain)
+scaler.fit(xNotTest)
 xTrain = scaler.transform(xTrain)
 xVal = scaler.transform(xVal)
 xTest = scaler.transform(xTest)
@@ -65,9 +64,13 @@ xx, yy = np.meshgrid(np.arange(x_min, x_max, .02),
 cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
 cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
 
-KNN = 0
-SVM = 1             
-                            
+KNN = 1
+SVM = 1   
+_PCA = 1         
+             
+bestK = 0
+bestC = [0, 0] # linear, rbf
+               
 # 1. KNN
 if KNN:
     K = [1,3,5,7]
@@ -75,8 +78,7 @@ if KNN:
     plt.figure()
     ax = [None]*len(K)
     for i, k in enumerate(K):    
-        clf = KNeighborsClassifier(n_neighbors=k).fit(xTrain, yTrain)  
-        #accuracy = accuracy_score(Kpred[i], yVal)
+        clf = KNeighborsClassifier(n_neighbors=k).fit(xTrain, yTrain)
         Kscore[i] = clf.score(xVal, yVal)
         
         # Create plot        
@@ -92,11 +94,7 @@ if KNN:
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
 
-        denormalize_labels(ax[i], mean, variance)
-        #plt.title("Wine classification (k = %i)"
-        #          % (K[i]))    
-        #filename = 'wine%d' % (K[i])        
-    
+        denormalize_labels(ax[i], mean, variance)      
     
     clear_labels(ax, [0, 1], [1, 3])
     plt.savefig('knnPredPlot', dpi=250)
@@ -106,12 +104,12 @@ if KNN:
     plt.scatter(K, Kscore)
     plt.xlabel('K')
     plt.ylabel('accuracy')
-    #plt.show()
     plt.savefig('knnScorePlot', dpi=250)
     
     # evaluate the best K on the test set
-    bestK = np.asarray(Kscore).argmax()
-    clf = KNeighborsClassifier(n_neighbors=K[bestK]).fit(xTrain, yTrain)
+    bestKIndex = np.asarray(Kscore).argmax()
+    bestK = K[bestKIndex]
+    clf = KNeighborsClassifier(n_neighbors=bestK).fit(xTrain, yTrain)
     KNNtestScore = clf.score(xTest, yTest)
     print("KNN test score: %f" % (KNNtestScore))
 
@@ -122,7 +120,6 @@ if SVM:
     for c, ker in enumerate(["linear", "rbf"]):               
         ax = [None]*len(C)                
         plt.figure()
-        #plt.subplots_adjust(hspace=0.4, wspace=1.5)        
         for i, cc in enumerate(C):
             clf = SVC(C=cc, gamma='scale', kernel=ker).fit(xTrain, yTrain)
             SVMscore[i] = clf.score(xVal, yVal)
@@ -137,9 +134,7 @@ if SVM:
             plt.scatter(xTrain[:, 0], xTrain[:, 1], c=yTrain, cmap=cmap_bold,
                         edgecolor='k', s=20)   
             
-            denormalize_labels(ax[i], mean, variance)
-            #plt.title("(C = %g)"
-            #        % (C[i]))            
+            denormalize_labels(ax[i], mean, variance) 
                         
         clear_labels(ax, [0, 1, 2, 3], [1, 2, 4, 5])
         plt.savefig(ker+'PredPlot', dpi=250)
@@ -151,13 +146,12 @@ if SVM:
         plt.xlabel('C')
         plt.ylabel('accuracy')
         plt.scatter(C, SVMscore)
-        #plt.show()
         plt.savefig(ker+'ScorePlot', dpi=250)
         
         # evaluate the best C on the test set
-        bestC = np.asarray(SVMscore).argmax()
-        #print("bestC: %d - %f" % (bestC, SVMscore[bestC]))
-        clf = SVC(C=C[bestC], gamma='scale', kernel=ker).fit(xTrain, yTrain)
+        bestCIndex = np.asarray(SVMscore).argmax()
+        bestC[c] = C[bestCIndex]
+        clf = SVC(C=bestC[c], gamma='scale', kernel=ker).fit(xTrain, yTrain)
         SVMtestScore = clf.score(xTest, yTest)
         print(ker + " test score: %f" % (SVMtestScore))
         print()
@@ -170,9 +164,9 @@ if SVM:
         GridScore[1][i] = clf.score(xVal, yVal)
     
     bestVal = np.asmatrix(GridScore).argmax()
-    bestC = C[bestVal % len(C)]
+    bestCGrid = C[bestVal % len(C)]
     bestGamma = 'scale' if bestVal//len(C) == 0 else 'auto'
-    clf = SVC(C=bestC, gamma=bestGamma, kernel='rbf').fit(xTrain, yTrain)
+    clf = SVC(C=bestCGrid, gamma=bestGamma, kernel='rbf').fit(xTrain, yTrain)
     plt.figure()
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
@@ -187,7 +181,7 @@ if SVM:
     plt.ylabel('Malic acid')    
     plt.savefig('gridPredPlot', dpi=250)
     gridTestScore = clf.score(xTest, yTest)
-    print("best params: C=%f, gamma=%s" %(bestC, bestGamma))
+    print("best params: C=%f, gamma=%s" %(bestCGrid, bestGamma))
     print("grid test score: %f" % (gridTestScore))
     print()    
 
@@ -214,3 +208,24 @@ if SVM:
     bestParams = ', '.join("{!s}={!r}".format(key,val) for (key,val) in clf.best_params_.items())    
     print("CV best params: " + bestParams)
     print("CV grid test score: %f" % (gridTestScore))
+    
+# 6. PCA    
+if _PCA:
+    pca = PCA(n_components=2)
+    pca.fit(xNotTest)
+    pcaTrain = pca.transform(xTrain)
+    pcaVal = pca.transform(xVal)
+    pcaTest = pca.transform(xTest)
+    pcaNotTest = pca.transform(xNotTest)
+    
+    clf = KNeighborsClassifier(n_neighbors=bestK).fit(pcaTrain, yTrain)      
+    score = clf.score(pcaTest, yTest)
+    print("PCA-KNN score: %f" %(score))
+    
+    clf = SVC(C=bestC[0], gamma='scale', kernel='linear').fit(pcaTrain, yTrain)
+    score = clf.score(pcaTest, yTest)
+    print("PCA-linear SVM score: %f" %(score))
+    
+    clf = SVC(C=bestC[1], gamma='scale', kernel='rbf').fit(pcaTrain, yTrain)
+    score = clf.score(pcaTest, yTest)
+    print("PCA-RBF SVM score: %f" %(score)) 
